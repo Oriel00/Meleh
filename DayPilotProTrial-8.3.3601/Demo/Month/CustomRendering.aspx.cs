@@ -1,0 +1,235 @@
+using System;
+using System.Data;
+using System.Drawing;
+using DayPilot.Web.Ui.Data;
+using DayPilot.Web.Ui.Enums;
+using DayPilot.Web.Ui.Events;
+using DayPilot.Web.Ui.Events.Bubble;
+
+public partial class Month_CustomRendering : System.Web.UI.Page
+{
+    private DataTable table;
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        initData();
+        if (!IsPostBack)
+        {
+            DayPilotMonth1.DataSource = getData(DayPilotMonth1.VisibleStart, DayPilotMonth1.VisibleEnd, null);
+            DataBind();
+        }
+
+    }
+
+    protected void DayPilotCalendar1_EventMenuClick(object sender, EventMenuClickEventArgs e)
+    {
+        if (e.Command == "Delete")
+        {
+            #region Simulation of database update
+            DataRow dr = table.Rows.Find(e.Id);
+
+            if (dr != null)
+            {
+                table.Rows.Remove(dr);
+                table.AcceptChanges();
+            }
+            #endregion
+
+            DayPilotMonth1.DataSource = getData(DayPilotMonth1.VisibleStart, DayPilotMonth1.VisibleEnd, null);
+            DayPilotMonth1.DataBind();
+            DayPilotMonth1.Update();
+        }
+    }
+    protected void DayPilotMonth1_EventMove(object sender, EventMoveEventArgs e)
+    {
+        #region Simulation of database update
+
+        DataRow dr = table.Rows.Find(e.Id);
+        if (dr != null)
+        {
+            dr["start"] = e.NewStart;
+            dr["end"] = e.NewEnd;
+            //dr["column"] = e.NewResource;
+            table.AcceptChanges();
+        }
+        else // moved from outside
+        {
+            dr = table.NewRow();
+            dr["start"] = e.NewStart;
+            dr["end"] = e.NewEnd;
+            dr["id"] = e.Id;
+            dr["name"] = e.Text;
+            //dr["column"] = e.NewResource;
+
+            table.Rows.Add(dr);
+            table.AcceptChanges();
+        }
+
+        #endregion
+
+        DayPilotMonth1.DataSource = getData(DayPilotMonth1.VisibleStart, DayPilotMonth1.VisibleEnd, null);
+        DayPilotMonth1.DataBind();
+        DayPilotMonth1.Update("Event moved.");
+
+    }
+    protected void DayPilotMonth1_EventResize(object sender, EventResizeEventArgs e)
+    {
+        #region Simulation of database update
+
+        DataRow dr = table.Rows.Find(e.Id);
+        if (dr != null)
+        {
+            dr["start"] = e.NewStart;
+            dr["end"] = e.NewEnd;
+            table.AcceptChanges();
+        }
+
+        #endregion
+
+        DayPilotMonth1.DataSource = getData(DayPilotMonth1.VisibleStart, DayPilotMonth1.VisibleEnd, null);
+        DayPilotMonth1.DataBind();
+        DayPilotMonth1.Update("Event resized");
+
+    }
+    protected void DayPilotMonth1_BeforeCellRender(object sender, DayPilot.Web.Ui.Events.Month.BeforeCellRenderEventArgs e)
+    {
+        
+        if (e.Start == DateTime.Today)
+        {
+            e.HeaderHTML = String.Format("<span style='font-weight:bold'>{0}</span>", e.Start.Day);
+            e.HeaderBackColor = "#FFD3BD";
+        }
+          
+    }
+
+    protected void DayPilotMonth1_BeforeHeaderRender(object sender, DayPilot.Web.Ui.Events.Month.BeforeHeaderRenderEventArgs e)
+    {
+//     e.InnerHTML = "<b>" + e.InnerHTML + "</b>";
+    }
+
+    protected void DayPilotMonth1_TimeRangeSelected(object sender, TimeRangeSelectedEventArgs e)
+    {
+        #region Simulation of database update
+        DataRow dr = table.NewRow();
+        dr["start"] = e.Start;
+        dr["end"] = e.End;
+        dr["id"] = Guid.NewGuid().ToString();
+        dr["name"] = "New event";
+
+        table.Rows.Add(dr);
+        table.AcceptChanges();
+        #endregion
+
+        DayPilotMonth1.DataSource = getData(DayPilotMonth1.VisibleStart, DayPilotMonth1.VisibleEnd, null);
+        DayPilotMonth1.DataBind();
+        DayPilotMonth1.Update();
+    }
+    protected void DayPilotMonth1_BeforeEventRender(object sender, DayPilot.Web.Ui.Events.Month.BeforeEventRenderEventArgs e)
+    {
+        int id;
+        
+        if (!Int32.TryParse(e.Id, out id))
+        {
+            return;
+        }
+
+        if (id < 5)
+        {
+            e.BackgroundColor = "#BDE9FF";
+        }
+        else if (id < 10)
+        {
+            e.BackgroundColor = "#B3FFC6";
+        }
+        else if (id == 11)
+        {
+            e.Html = String.Format("<img src='../Media/linked/red8x8.gif' width='8' height='8' valign='absmiddle' /> {0}", e.Html);
+        }
+
+        /*
+        int padding = 2;
+        e.Areas.Add(new Area().Left(50).Top(padding).Right(50).Bottom(padding).Html(e.Html).Visible());
+        e.Areas.Add(new Area().Left(padding).Top(padding).Width(50).Bottom(padding).Html(e.Start.ToString("h:mm tt")).Visible().Style("color: #666; font-size: 8pt;"));
+        e.Areas.Add(new Area().Right(padding).Top(padding).Width(50).Bottom(padding).Html(e.End.ToString("h:mm tt")).Visible().Style("color: #666; font-size: 8pt;"));
+        e.Html = "&nbsp;";
+         */
+    }
+
+    protected void DayPilotBubble1_RenderContent(object sender, RenderEventArgs e)
+    {
+        if (e is RenderEventBubbleEventArgs)
+        {
+            RenderEventBubbleEventArgs re = e as RenderEventBubbleEventArgs;
+            re.InnerHTML = "<b>Event details</b><br />Here is the right place to show details about the event with ID: " + re.Value + ". This text is loaded dynamically from the server.";
+        }
+    }
+
+    protected void DayPilotMonth1_Command(object sender, CommandEventArgs e)
+    {
+          switch (e.Command)
+        {
+            case "next":
+                DayPilotMonth1.StartDate = DayPilotMonth1.StartDate.AddMonths(1);
+                break;
+            case "previous":
+                DayPilotMonth1.StartDate = DayPilotMonth1.StartDate.AddMonths(-1);
+                break;
+            case "today":
+                DayPilotMonth1.StartDate = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
+                break;
+        }
+
+        DayPilotMonth1.DataSource = getData(DayPilotMonth1.VisibleStart, DayPilotMonth1.VisibleEnd, null);
+        DayPilotMonth1.DataBind();
+        DayPilotMonth1.Update(CallBackUpdateType.Full);
+    }
+
+    /// <summary>
+    /// Make sure a copy of the data is in the Session so users can try changes on their own copy.
+    /// </summary>
+    private void initData()
+    {
+        if (Session["MonthCustomRendering"] == null)
+        {
+            Session["MonthCustomRendering"] = DataGeneratorMonth.GetData();
+        }
+
+        table = (DataTable)Session["MonthCustomRendering"];
+    }
+
+    /// <summary>
+    /// This method should normally load the data from the database.
+    /// We will load our copy from a Session, just simulating a database.
+    /// </summary>
+    /// <param name="start"></param>
+    /// <param name="end"></param>
+    /// <param name="filter"></param>
+    /// <returns></returns>
+    private DataTable getData(DateTime start, DateTime end, string filter)
+    {
+        String select;
+        if (String.IsNullOrEmpty(filter))
+        {
+            select = String.Format("NOT (([end] <= '{0:s}') OR ([start] >= '{1:s}'))", start, end, filter);
+        }
+        else
+        {
+            select = String.Format("NOT (([end] <= '{0:s}') OR ([start] >= '{1:s}')) and [name] like '%{2}%'", start, end, filter);
+            //            throw new Exception(select);
+        }
+
+
+        DataRow[] rows = table.Select(select);
+
+        DataTable filtered = table.Clone();
+
+        foreach (DataRow r in rows)
+        {
+            filtered.ImportRow(r);
+        }
+
+        return filtered;
+    }
+
+
+}

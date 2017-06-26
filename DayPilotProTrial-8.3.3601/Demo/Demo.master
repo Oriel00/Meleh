@@ -1,0 +1,95 @@
+<%@ Master Language="C#" AutoEventWireup="true" CodeFile="Demo.master.cs" Inherits="Demo" %>
+<!DOCTYPE html>
+<html>
+<head runat="server">
+    <title></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link type="text/css" href='Themes/navigator_blue.css' rel="stylesheet" />    
+    <link type="text/css" href='Themes/navigator_white.css' rel="stylesheet" />    
+    <link type="text/css" href='Themes/navigator_green.css' rel="stylesheet" />    
+    <link type="text/css" href='Themes/navigator_transparent.css' rel="stylesheet" />    
+    <link type="text/css" href='Themes/navigator_8.css' rel="stylesheet" />    
+    <link type="text/css" href='Themes/navigator_g.css' rel="stylesheet" />    
+    <link type="text/css" href='Themes/calendar_green.css' rel="stylesheet" />    
+    <link type="text/css" href='Themes/calendar_blue.css' rel="stylesheet" />    
+    <link type="text/css" href='Themes/calendar_white.css' rel="stylesheet" />    
+    <link type="text/css" href='Themes/calendar_transparent.css' rel="stylesheet" />    
+    <link type="text/css" href='Themes/calendar_traditional.css' rel="stylesheet" />    
+    <link type="text/css" href='Themes/calendar_g.css' rel="stylesheet" />    
+    <link type="text/css" href='Themes/month_green.css' rel="stylesheet" />    
+    <link type="text/css" href='Themes/month_blue.css' rel="stylesheet" />    
+    <link type="text/css" href='Themes/month_white.css' rel="stylesheet" />    
+    <link type="text/css" href='Themes/month_transparent.css' rel="stylesheet" />    
+    <link type="text/css" href='Themes/month_traditional.css' rel="stylesheet" />    
+    <link type="text/css" href='Themes/scheduler_green.css' rel="stylesheet" />    
+    <link type="text/css" href='Themes/scheduler_blue.css' rel="stylesheet" />    
+    <link type="text/css" href='Themes/scheduler_white.css' rel="stylesheet" />    
+    <link type="text/css" href='Themes/scheduler_transparent.css' rel="stylesheet" />    
+    <link type="text/css" href='Themes/scheduler_traditional.css' rel="stylesheet" />    
+    <link type="text/css" href='Themes/scheduler_8.css?v=1' rel="stylesheet" />    
+    <link type="text/css" href='Themes/areas.css' rel="stylesheet" />    
+    <link type="text/css" href='Media/layout.css' rel="stylesheet" />    
+    <link type="text/css" href='Media/elements.css?v=1' rel="stylesheet" />    
+	<script type="text/javascript" src="<%= Page.ResolveClientUrl("~/Js/modal.js?v=2.7") %>"></script>
+	<asp:contentplaceholder id="ContentPlaceHolderHeader" runat="server"></asp:contentplaceholder>
+</head>
+<body>
+    <form id="form1" runat="server">
+        <div id="header">
+			<div class="bg-help">
+				<div class="inBox">
+					<h1 id="logo"><a href='http://www.daypilot.org/'>DayPilot Pro for ASP.NET</a> &raquo; <a href='<%= ResolveUrl("~/") %>'>Demo</a></h1>
+					<p id="claim">AJAX Outlook-Like Calendar/Scheduling Controls for ASP.NET 2.0+</p>
+					<hr class="hidden" />
+				</div>
+			</div>
+		</div>
+		
+    <div id="download">
+            <div style="float:left; width: 100px;"><a href="<%= GetDownloadUrl() %>" class="inline-btn"><span>Download</span></a></div>
+            <div style="margin-left: 110px;">
+                <asp:PlaceHolder runat="server" id="DemoInfo" Visible="<%# IsDemo %>"><div>Download  DayPilot Pro trial version (634 kB).</div></asp:PlaceHolder>
+                <asp:PlaceHolder runat="server" id="SandboxInfo" Visible="<%# IsSandbox %>"><div><%= GetLastUpdate() %></div></asp:PlaceHolder>
+                <div><% =GetDownloadLink() %></div>
+            </div>
+    </div>
+
+    <div id="main">
+        <div id="tabs">
+            <div>
+           	    <asp:Repeater id="Repeater1" runat="server" DataSource="<%# Tabs %>">
+		            <ItemTemplate><asp:PlaceHolder 
+		                ID="PlaceHolder1" runat="server" Visible='<%# DataBinder.Eval(Container, "DataItem.url") != DBNull.Value %>'><a class='<%# DataBinder.Eval(Container, "DataItem.class")%>' href='<%# DataBinder.Eval(Container, "DataItem.url")%>'><span style="width: 100px; text-align:center;"><%# DataBinder.Eval(Container, "DataItem.title")%></span></a></asp:PlaceHolder></ItemTemplate>
+	            </asp:Repeater>
+            </div>
+            <div class="header"><div class="bg-help"><%= Description %></div></div>
+        </div>
+        
+        <div id="container" >
+	        <div id="left" class="menu">
+       	        <asp:Repeater id="Repeater2" runat="server" DataSource="<%# Items %>" Visible="<%# MenuVisible %>" >
+    		        <ItemTemplate>
+                        <asp:PlaceHolder ID="PlaceHolder3" runat="server" Visible='<%# DataBinder.Eval(Container, "DataItem.url") != DBNull.Value %>'>
+		    	            <div>
+			    	            <a href='<%# DataBinder.Eval(Container, "DataItem.url")%>' class='<%# DataBinder.Eval(Container, "DataItem.class")%>'>
+				    	            <span><%# DataBinder.Eval(Container, "DataItem.title")%></span>
+    				            </a>
+	    		            </div>
+		                </asp:PlaceHolder>
+			            <asp:PlaceHolder ID="PlaceHolder4" runat="server" Visible='<%# DataBinder.Eval(Container, "DataItem.url") ==  DBNull.Value %>'>
+			                <div class="header"><%# DataBinder.Eval(Container, "DataItem.title")%></div>
+			            </asp:PlaceHolder>
+		            </ItemTemplate>
+	            </asp:Repeater>
+            </div>
+	        <div id="content">
+	            <div>
+                    <asp:contentplaceholder id="ContentPlaceHolder1" runat="server">
+                    </asp:contentplaceholder>
+                </div>
+	        </div>
+        </div>
+    </div>
+    </form>
+</body>
+</html>
